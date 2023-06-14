@@ -1,11 +1,6 @@
 name: Charts CI
 
-#on: pull_request
-on:
-    push:
-      branches:
-        - '*'
-        - '!main'
+on: pull_request
 
 jobs:
     lint-test:
