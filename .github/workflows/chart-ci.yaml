@@ -32,7 +32,9 @@ jobs:
       - name: Run chart-testing (list-changed)
         id: list-changed
         run: |
-          changed=$(ct list-changed  --chart-dirs="charts/cluster-registry-client" --target-branch ${{ github.event.repository.default_branch }})
+          echo "$(pwd)"
+          echo "$(ls -la)"
+          changed=$(ct list-changed  --chart-dirs charts/cluster-registry-client  --target-branch ${{ github.event.repository.default_branch }})
           if [[ -n "$changed" ]]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
