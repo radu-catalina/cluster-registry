@@ -55,7 +55,7 @@ jobs:
       env:
         # dummy env vars to test the client chart locally
         CLUSTER_REGISTRY_SECRET_NAME: "cluster-registry-aws"
-        AWS_ACCESS_KEY_ID: "aws-access-key"
+        AWS_ACCESS_KEY_ID: "aws-access-key-id"
         AWS_SECRET_ACCESS_KEY: "aws-secret-access-key"
         SQS_AWS_REGION: "sqs-aws-region"
         SQS_ENDPOINT: "http://localhost:9324"
@@ -64,11 +64,12 @@ jobs:
         kubectl config use-context kind-${{ env.CLUSTER_NAME }}
         kubectl create namespace ${{ env.NAMESPACE }}
         kubectl -n ${{ env.NAMESPACE }} create secret generic cluster-registry-aws \
-        --from-literal=AWS_ACCESS_KEY=${{ env.AWS_ACCESS_KEY_ID }}                 \
+        --from-literal=AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }}              \
         --from-literal=AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}      \
         --from-literal=SQS_AWS_REGION=${{ env.SQS_AWS_REGION }}                    \
         --from-literal=SQS_ENDPOINT=${{ env.SQS_ENDPOINT }}                        \
         --from-literal=SQS_QUEUE_NAME=${{ env.SQS_QUEUE_NAME }}
+        kubectl get secret -n ${{ env.NAMESPACE }} cluster-registry-aws -o yaml
 
     - name: Run chart-testing (install)
       if: steps.list-changed.outputs.changed == 'true'
