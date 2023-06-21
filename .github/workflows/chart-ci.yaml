@@ -6,7 +6,7 @@ jobs:
   lint-test:
     runs-on: ubuntu-latest
     env:
-      # dummy env vars
+      # dummy env vars to test the client chart locally
       AWS_ACCESS_KEY_ID: "aws-access-key"
       AWS_SECRET_ACCESS_KEY: "aws-secret-access-key"
       SQS_AWS_REGION: "sqs-aws-region"
@@ -42,8 +42,6 @@ jobs:
     - name: Run chart-testing (list-changed)
       id: list-changed
       run: |
-        echo "$(pwd)"
-        echo "$(ls -la)"
         changed=$(ct list-changed  --target-branch ${{ github.event.repository.default_branch }})
         if [[ -n "$changed" ]]; then
           echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -63,11 +61,11 @@ jobs:
       run: |
         kubectl config use-context kind-${{ env.CLUSTER_NAME }}
         kubectl create namespace ${{ env.NAMESPACE }}
-        kubectl -n ${{ env.NAMESPACE }} create secret generic aws-credentials \
-        --from-literal=AWS_ACCESS_KEY=${{ env.AWS_ACCESS_KEY_ID }}            \
-        --from-literal=AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }} \
-        --from-literal=SQS_AWS_REGION=${{ env.SQS_AWS_REGION }}               \
-        --from-literal=SQS_ENDPOINT=${{ env.SQS_ENDPOINT }}                   \
+        kubectl -n ${{ env.NAMESPACE }} create secret generic cluster-registry-aws \
+        --from-literal=AWS_ACCESS_KEY=${{ env.AWS_ACCESS_KEY_ID }}                 \
+        --from-literal=AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}      \
+        --from-literal=SQS_AWS_REGION=${{ env.SQS_AWS_REGION }}                    \
+        --from-literal=SQS_ENDPOINT=${{ env.SQS_ENDPOINT }}                        \
         --from-literal=SQS_QUEUE_NAME=${{ env.SQS_QUEUE_NAME }}
 
     - name: Run chart-testing (install)
