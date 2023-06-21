@@ -6,12 +6,6 @@ jobs:
   lint-test:
     runs-on: ubuntu-latest
     env:
-      # dummy env vars to test the client chart locally
-      AWS_ACCESS_KEY_ID: "aws-access-key"
-      AWS_SECRET_ACCESS_KEY: "aws-secret-access-key"
-      SQS_AWS_REGION: "sqs-aws-region"
-      SQS_ENDPOINT: "http://localhost:9324"
-      SQS_QUEUE_NAME: "cluster-registry-local"
       NAMESPACE: "cluster-registry-client"
       CLUSTER_NAME: "cluster-test"
 
@@ -57,7 +51,15 @@ jobs:
       with:
         cluster_name: ${{ env.CLUSTER_NAME }}
 
-    - name: Set up local environment
+    - name: Set up env
+      env:
+        # dummy env vars to test the client chart locally
+        CLUSTER_REGISTRY_SECRET_NAME: "cluster-registry-aws"
+        AWS_ACCESS_KEY_ID: "aws-access-key"
+        AWS_SECRET_ACCESS_KEY: "aws-secret-access-key"
+        SQS_AWS_REGION: "sqs-aws-region"
+        SQS_ENDPOINT: "http://localhost:9324"
+        SQS_QUEUE_NAME: "cluster-registry-local"
       run: |
         kubectl config use-context kind-${{ env.CLUSTER_NAME }}
         kubectl create namespace ${{ env.NAMESPACE }}
