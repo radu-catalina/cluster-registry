@@ -71,5 +71,9 @@ jobs:
         helm repo add cluster-registry  https://opensource.adobe.com/cluster-registry
         helm repo update
         helm install cluster-registry  cluster-registry/cluster-registry-client --namespace  ${{ env.NAMESPACE }}
+        sleep 10
+        kubectl get pods
+        for pod in  $(kubectl get pods --no-headers | awk '{print $1}'); do kubectl describe pod "$pod"; done
         kubectl wait --for=condition=Ready pod -l app=cluster-registry-client
+        for pod in  $(kubectl get pods --no-headers | awk '{print $1}'); do kubectl describe pod "$pod"; done
         kubectl logs -n ${{ env.NAMESPACE }} -f deployments/cluster-registry-client
