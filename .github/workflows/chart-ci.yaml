@@ -68,5 +68,7 @@ jobs:
       if: steps.list-changed.outputs.changed == 'true'
       run: |
         kubectl config use-context kind-${{ env.CLUSTER_NAME }}
+        helm repo add cluster-registry  https://opensource.adobe.com/cluster-registry
+        helm repo update
         helm install cluster-registry  cluster-registry/cluster-registry-client --namespace  ${{ env.NAMESPACE }}
         kubectl logs -n ${{ env.NAMESPACE }} -f deployments/cluster-registry-client
