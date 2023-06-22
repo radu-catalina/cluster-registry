@@ -67,6 +67,6 @@ jobs:
     - name: Run chart-testing (install)
       if: steps.list-changed.outputs.changed == 'true'
       run: |
-        ct install --target-branch ${{ github.event.repository.default_branch }} --namespace ${{ env.NAMESPACE }} || true
         kubectl config use-context kind-${{ env.CLUSTER_NAME }}
+        helm install cluster-registry  cluster-registry/cluster-registry-client --namespace  ${{ env.NAMESPACE }}
         kubectl logs -n ${{ env.NAMESPACE }} -f deployments/cluster-registry-client
