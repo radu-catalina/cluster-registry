@@ -9,6 +9,16 @@ jobs:
       NAMESPACE: "cluster-registry"
       CLUSTER_NAME: "cluster-registry-cluster"
 
+      CONTAINER_SQS: "sqs"
+      IMAGE_SQS: "softwaremill/elasticmq-native:1.2.3"
+      SQS_ENDPOINT: "http://sqs:9324"
+      SQS_AWS_REGION: "sqs-aws-region"
+      SQS_QUEUE_NAME: "cluster-registry-local"
+
+      AWS_ACCESS_KEY_ID: "aws-access-key"
+      AWS_SECRET_ACCESS_KEY: "aws-secret-access-key"
+      AWS_REGION: "aws-region"
+
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -51,12 +61,20 @@ jobs:
       with:
         cluster_name: ${{ env.CLUSTER_NAME }}
 
+    - name: Install SQS
+      run: |
+        kubectl config use-context kind-${{ env.CLUSTER_NAME }}
+        kubectl create namespace ${{ env.NAMESPACE }}
+        kubectl -n ${{ env.NAMESPACE }} run ${{ env.CONTAINER_SQS }} --image ${{ env.IMAGE_SQS }} --port 9324 --expose
+        kubectl -n ${{ env.NAMESPACE }} wait --for=condition=Ready pod -l run=${{ env.CONTAINER_SQS }}
+        kubectl -n ${{ env.NAMESPACE }} get pods
+        kubectl -n ${{ env.NAMESPACE }} get svc
+
     - name: Set up env
       env:
         CLUSTER_REGISTRY_SECRET_NAME: "cluster-registry-aws"
       run: |
         kubectl config use-context kind-${{ env.CLUSTER_NAME }}
-        kubectl create namespace ${{ env.NAMESPACE }}
         kubectl -n ${{ env.NAMESPACE }} create secret generic ${{ env.CLUSTER_REGISTRY_SECRET_NAME }} \
         --from-literal=AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }}                                 \
         --from-literal=AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}                         \
