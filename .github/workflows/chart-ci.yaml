@@ -71,4 +71,5 @@ jobs:
         helm repo add cluster-registry  https://opensource.adobe.com/cluster-registry
         helm repo update
         helm install cluster-registry  cluster-registry/cluster-registry-client --namespace  ${{ env.NAMESPACE }}
+        kubectl wait --for=condition=Ready pod -l app=cluster-registry-client
         kubectl logs -n ${{ env.NAMESPACE }} -f deployments/cluster-registry-client
