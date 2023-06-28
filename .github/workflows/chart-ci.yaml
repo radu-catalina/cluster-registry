@@ -65,10 +65,13 @@ jobs:
       run: |
         kubectl config use-context kind-${{ env.CLUSTER_NAME }}
         kubectl create namespace ${{ env.NAMESPACE }}
-        kubectl -n ${{ env.NAMESPACE }} run ${{ env.CONTAINER_SQS }} --image ${{ env.IMAGE_SQS }} --port 9324 --expose
-        kubectl -n ${{ env.NAMESPACE }} wait --for=condition=Ready pod -l run=${{ env.CONTAINER_SQS }}
+        kubectl apply -f local/sqs/sqs.yaml
         kubectl -n ${{ env.NAMESPACE }} get pods
-        kubectl -n ${{ env.NAMESPACE }} get svc
+        kubectl -n ${{ env.NAMESPACE }} get deployment sqs -o yaml
+        kubectl -n ${{ env.NAMESPACE }} get svc sqs -o yaml
+        kubectl -n ${{ env.NAMESPACE }} wait --for=condition=Ready pod -l run=${{ env.CONTAINER_SQS }}
+        local/sqs/producer.sh
+
 
     - name: Set up env
       env:
