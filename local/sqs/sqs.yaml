@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cluster-registry
+---
+
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: elasticmq
+  namespace: cluster-registry
+data:
+  elasticmq.conf.file: |-
+    include classpath("application.conf")
+
+    queues {
+    cluster-registry-local {
+        defaultVisibilityTimeout = 10 seconds
+        delay = 5 seconds
+        receiveMessageWait = 0 seconds
+        deadLettersQueue {
+            name = "cluster-registry-local-dead-letters"
+            maxReceiveCount = 3 // from 1 to 1000
+        }
+        fifo = false
+        contentBasedDeduplication = false
+        copyTo = "audit-cluster-registry-local"
+        tags {
+            tag1 = "tagged1"
+            tag2 = "tagged2"
+        }
+    }
+    cluster-registry-local-dead-letters { }
+    audit-cluster-registry-local { }
+---
+
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: sqs
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: sqs
+        role: sqs
+    spec:
+      containers:
+      - name: sqs
+        image: softwaremill/elasticmq-native:1.2.3
+        ports:
+        - name: sqs
+          containerPort: 9324
+        volumeMounts:
+        - name: elasticmq-conf
+          mountPath: /etc/elasticmq
+      volumes:
+      - name: elasticmq-conf
+        configMap:
+          name: elasticmq
+          items:
+          - key: elasticmq.conf.file
+            path: elasticmq.conf
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: sqs
+  labels:
+    role: sqs
+spec:
+  type: ClusterIP
+  ports:
+  - port: 9324
+    name: control
+  selector:
+    role: sqs
